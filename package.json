@@ -1,0 +1,11 @@
+{
+  "name": "validate-commits",
+  "version": "1.0.0",
+  "description": "Validates commits based on a series of scopes/tasks",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/bigcommerce-labs/validate-commits.git"
+  },
+  "author": "Bigcommerce",
+  "license": "ISC",
+}
