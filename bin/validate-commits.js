@@ -15,6 +15,19 @@ function getNonEmptyLines(text) {
         .filter(line => !line.match(/^\s*$/));
 }
 
+if (process.argv.includes('--help')) {
+    console.log(`
+usage: validate-commits [--warning]
+
+Checks the format of the commits
+
+Options:
+
+  --warning Suppress error code.
+`.trim());
+    process.exit(0);
+}
+
 shellRunner.run('git log --format=%s --no-merges master..')
     .then((commits) => {
         const cleanCommitList = getNonEmptyLines(commits);
