@@ -2,6 +2,7 @@
 
 const CommitValidator = require('../lib/commit-validator');
 const Reporter = require('../lib/reporter');
+const utils = require('../lib/utils');
 
 const config = require('../lib/config');
 const shellRunner = require('../lib/shell-runner')
@@ -9,28 +10,24 @@ const shellRunner = require('../lib/shell-runner')
 const commitValidator = new CommitValidator(config);
 const reporter = new Reporter();
 
-function getNonEmptyLines(text) {
-    return text
-        .split('\n')
-        .filter(line => !line.match(/^\s*$/));
+if (process.argv.includes('--help')) {
+    console.log(utils.helpText);
+    process.exit(0);
 }
 
-if (process.argv.includes('--help')) {
-    console.log(`
-usage: validate-commits [--warning]
-
-Checks the format of the commits
-
-Options:
-
-  --warning Suppress error code.
-`.trim());
-    process.exit(0);
+if (process.argv.includes('--install-git-hook')) {
+    try {
+        utils.installGitHook();
+        process.exit(0);
+    } catch(error) {
+        console.error(error.message);
+        process.exit(1);
+    }
 }
 
 shellRunner.run('git log --format=%s --no-merges master..')
     .then((commits) => {
-        const cleanCommitList = getNonEmptyLines(commits);
+        const cleanCommitList = utils.filterEmptyLines(commits);
         const results = commitValidator.validate(cleanCommitList);
         reporter.printReport(results);
 
