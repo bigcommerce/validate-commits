@@ -7,11 +7,13 @@ const execSync = require('child_process').execSync;
 
 const config = require('../lib/config');
 
+const log = process.argv.includes('--silent') ? () => {} : console.log;
+
 const commitValidator = new CommitValidator(config);
 const reporter = new Reporter();
 
 if (process.argv.includes('--help')) {
-    console.log(utils.helpText);
+    log(utils.helpText);
     process.exit(0);
 }
 
@@ -19,7 +21,7 @@ if (process.argv.includes('--install-git-hook')) {
     try {
         utils.installGitHook()
     } catch(error) {
-        console.error(error.message);
+        log(error.message);
     }
 
     process.exit(0);
@@ -31,6 +33,6 @@ const results = commitValidator.validate(cleanCommitList);
 reporter.printReport(results);
 
 if (!results.valid && !process.argv.includes('--warning')) {
-    console.error('Commit format error');
+    log('Commit format error!');
     process.exit(1);
 }
