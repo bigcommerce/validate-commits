@@ -3,9 +3,9 @@
 const CommitValidator = require('../lib/commit-validator');
 const Reporter = require('../lib/reporter');
 const utils = require('../lib/utils');
+const execSync = require('child_process').execSync;
 
 const config = require('../lib/config');
-const shellRunner = require('../lib/shell-runner')
 
 const commitValidator = new CommitValidator(config);
 const reporter = new Reporter();
@@ -17,25 +17,20 @@ if (process.argv.includes('--help')) {
 
 if (process.argv.includes('--install-git-hook')) {
     try {
-        utils.installGitHook();
-        process.exit(0);
+        utils.installGitHook()
     } catch(error) {
         console.error(error.message);
-        process.exit(1);
     }
+
+    process.exit(0);
 }
 
-shellRunner.run('git log --format=%s --no-merges master..')
-    .then((commits) => {
-        const cleanCommitList = utils.filterEmptyLines(commits);
-        const results = commitValidator.validate(cleanCommitList);
-        reporter.printReport(results);
+const commits = execSync('git log --format=%s --no-merges master..').toString();
+const cleanCommitList = utils.filterEmptyLines(commits);
+const results = commitValidator.validate(cleanCommitList);
+reporter.printReport(results);
 
-        if (!results.valid && !process.argv.includes('--warning')) {
-            throw new Error('Commit format error!');
-        }
-    })
-    .catch(error => {
-        console.error(error.message);
-        process.exit(1);
-    });
+if (!results.valid && !process.argv.includes('--warning')) {
+    console.error('Commit format error');
+    process.exit(1);
+}
