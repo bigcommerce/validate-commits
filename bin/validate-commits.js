@@ -2,43 +2,37 @@
 
 const CommitValidator = require('../lib/commit-validator');
 const Reporter = require('../lib/reporter');
+const utils = require('../lib/utils');
+const execSync = require('child_process').execSync;
 
 const config = require('../lib/config');
-const shellRunner = require('../lib/shell-runner')
+
+const log = process.argv.includes('--silent') ? () => {} : console.log;
 
 const commitValidator = new CommitValidator(config);
 const reporter = new Reporter();
 
-function getNonEmptyLines(text) {
-    return text
-        .split('\n')
-        .filter(line => !line.match(/^\s*$/));
-}
-
 if (process.argv.includes('--help')) {
-    console.log(`
-usage: validate-commits [--warning]
-
-Checks the format of the commits
-
-Options:
-
-  --warning Suppress error code.
-`.trim());
+    log(utils.helpText);
     process.exit(0);
 }
 
-shellRunner.run('git log --format=%s --no-merges master..')
-    .then((commits) => {
-        const cleanCommitList = getNonEmptyLines(commits);
-        const results = commitValidator.validate(cleanCommitList);
-        reporter.printReport(results);
+if (process.argv.includes('--install-git-hook')) {
+    try {
+        utils.installGitHook()
+    } catch(error) {
+        log(error.message);
+    }
 
-        if (!results.valid && !process.argv.includes('--warning')) {
-            throw new Error('Commit format error!');
-        }
-    })
-    .catch(error => {
-        console.error(error.message);
-        process.exit(1);
-    });
+    process.exit(0);
+}
+
+const commits = execSync('git log --format=%s --no-merges master..').toString();
+const cleanCommitList = utils.filterEmptyLines(commits);
+const results = commitValidator.validate(cleanCommitList);
+reporter.printReport(results);
+
+if (!results.valid && !process.argv.includes('--warning')) {
+    log('Commit format error!');
+    process.exit(1);
+}
