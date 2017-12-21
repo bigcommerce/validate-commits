@@ -11,10 +11,16 @@
   "bin": {
     "validate-commits": "./bin/validate-commits.js"
   },
+  "scripts": {
+    "test": "jest"
+  },
+  "engines": {
+    "node": ">=6"
+  },
   "dependencies": {
     "chalk": "^2.1.0"
   },
-  "engines": {
-    "node": ">=4.4.7"
+  "devDependencies": {
+    "jest": "^22.0.3"
   }
 }
