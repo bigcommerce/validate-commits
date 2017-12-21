@@ -5,14 +5,16 @@ To use it:
 ### 1. Install the package in your repo:
 > `npm install --save git+https://git@github.com/bigcommerce-labs/validate-commits.git`
 
-### 2. Add a `scopes.json` in the root of your project:
+### 2. Add a `commit-validation.json` in the root of your project:
 
 ```json
-[
-    "payment",
-    "checkout",
-    "orders",
-]
+{
+    "scopes": [
+        "payment",
+        "checkout",
+        "orders"
+    ]
+}
 ```
 
 ### 3. Add the check to one of your tasks in `package.json`:
@@ -25,4 +27,3 @@ To use it:
 or run it manually: `./node_modules/.bin/validate-commits`
 
 Enjoy!
-
