@@ -1,4 +1,4 @@
-# Commit Validation
+# @bigcommerce/validate-commits
 
 This is a tool for validating commit messages - to ensure they have a consistent format and the required information.
 
