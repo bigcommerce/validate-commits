@@ -10,7 +10,7 @@
     "type": "git",
     "url": "git://github.com/bigcommerce/validate-commits.git"
   },
-  "author": "Bigcommerce",
+  "author": "BigCommerce",
   "license": "MIT",
   "bin": {
     "validate-commits": "./bin/validate-commits.js"
