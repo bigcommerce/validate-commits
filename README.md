@@ -27,3 +27,7 @@ To use it:
 or run it manually: `./node_modules/.bin/validate-commits`
 
 Enjoy!
+
+## License
+
+MIT
