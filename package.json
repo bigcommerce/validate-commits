@@ -1,6 +1,6 @@
 {
   "name": "@bigcommerce/validate-commits",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Validates commits based on a series of scopes/tasks",
   "files": [
     "bin",
