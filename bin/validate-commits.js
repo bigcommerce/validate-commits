@@ -29,7 +29,7 @@ if (process.argv.indexOf('--install-git-hook') !== -1) {
     process.exit(0);
 }
 
-const command = process.env.TRAVIS_PULL_REQUEST !== 'false' ?
+const command = process.env.TRAVIS_PULL_REQUEST && process.env.TRAVIS_PULL_REQUEST !== 'false' ?
     `git fetch --no-tags origin ${process.env.TRAVIS_BRANCH}:${process.env.TRAVIS_BRANCH} && git log --format=%s --no-merges ${process.env.TRAVIS_BRANCH}..` :
     'git log --format=%s --no-merges master..';
 const commits = execSync(command).toString();
