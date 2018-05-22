@@ -29,10 +29,14 @@ if (process.argv.indexOf('--install-git-hook') !== -1) {
     process.exit(0);
 }
 
-const command = process.env.TRAVIS_PULL_REQUEST && process.env.TRAVIS_PULL_REQUEST !== 'false' ?
-    `git fetch --no-tags origin ${process.env.TRAVIS_BRANCH}:${process.env.TRAVIS_BRANCH} && git log --format=%s --no-merges ${process.env.TRAVIS_BRANCH}..` :
-    'git log --format=%s --no-merges master..';
-const commits = execSync(command).toString();
+const baseBranch = getBranch();
+
+if (execSync(`git branch --list ${baseBranch}`).toString().trim() === '') {
+    log(`Skipping commit validation. Branch '${baseBranch}' is not available.`);
+    process.exit(0);
+}
+
+const commits = execSync(`git log --format=%s --no-merges ${baseBranch}..`).toString();
 const cleanCommitList = utils.filterEmptyLines(commits);
 const results = commitValidator.validate(cleanCommitList);
 reporter.printReport(results);
@@ -40,4 +44,13 @@ reporter.printReport(results);
 if (!results.valid && process.argv.indexOf('--warning') === -1) {
     log('Commit format error!');
     process.exit(1);
+}
+
+function getBranch() {
+    if (process.env.TRAVIS_PULL_REQUEST && process.env.TRAVIS_PULL_REQUEST !== 'false') {
+        execSync(`git fetch --no-tags origin ${process.env.TRAVIS_BRANCH}:${process.env.TRAVIS_BRANCH}`);
+        return process.env.TRAVIS_BRANCH;
+    }
+
+    return 'master';
 }
