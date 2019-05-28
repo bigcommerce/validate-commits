@@ -19,7 +19,7 @@
     "test": "jest"
   },
   "engines": {
-    "node": ">=6"
+    "node": ">=10"
   },
   "dependencies": {
     "chalk": "^2.1.0"
