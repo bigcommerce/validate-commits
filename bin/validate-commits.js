@@ -36,7 +36,7 @@ if (execSync(`git branch --list ${baseBranch}`).toString().trim() === '') {
     process.exit(0);
 }
 
-const commits = execSync(`git log --author=\\[bot\\] --invert-grep --format=%s --no-merges ${baseBranch}..`).toString();
+const commits = execSync(`git log --author='\\[bot\\]' --invert-grep --format=%s --no-merges ${baseBranch}..`).toString();
 const cleanCommitList = utils.filterEmptyLines(commits);
 const results = commitValidator.validate(cleanCommitList);
 reporter.printReport(results);
