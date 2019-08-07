@@ -6,20 +6,31 @@ const CommitValidator = require('../lib/commit-validator');
 const Reporter = require('../lib/reporter');
 const utils = require('../lib/utils');
 const execSync = require('child_process').execSync;
-
 const config = require('../lib/config');
+const argv = require('minimist')(process.argv.slice(2), {
+    boolean: true,
+    alias: {
+        'installGitHooks': 'install-git-hooks',
+    },
+    default: {
+        'silent': false,
+        'help': false,
+        'warning': false,
+        'install-git-hooks': false,
+    },
+});
 
-const log = process.argv.indexOf('--silent') !== -1 ? () => {} : console.log;
+const log = argv.silent ? () => {} : console.log;
 
 const commitValidator = new CommitValidator(config);
 const reporter = new Reporter();
 
-if (process.argv.indexOf('--help') !== -1) {
+if (argv.help) {
     log(utils.helpText);
     process.exit(0);
 }
 
-if (process.argv.indexOf('--install-git-hook') !== -1) {
+if (argv.installGitHooks) {
     try {
         utils.installGitHook()
     } catch(error) {
@@ -29,19 +40,14 @@ if (process.argv.indexOf('--install-git-hook') !== -1) {
     process.exit(0);
 }
 
-const baseBranch = getBranch();
+const range = argv._[0] || `${getBranch()}..`;
 
-if (execSync(`git branch --list ${baseBranch}`).toString().trim() === '') {
-    log(`Skipping commit validation. Branch '${baseBranch}' is not available.`);
-    process.exit(0);
-}
-
-const commits = execSync(`git log --author='\\[bot\\]' --invert-grep --format=%s --no-merges ${baseBranch}..`).toString();
+const commits = execSync(`git log --author='\\[bot\\]' --invert-grep --format=%s --no-merges ${range}`).toString();
 const cleanCommitList = utils.filterEmptyLines(commits);
 const results = commitValidator.validate(cleanCommitList);
 reporter.printReport(results);
 
-if (!results.valid && process.argv.indexOf('--warning') === -1) {
+if (!results.valid && !argv.warning) {
     log('Commit format error!');
     process.exit(1);
 }

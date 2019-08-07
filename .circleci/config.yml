@@ -1,0 +1,34 @@
+version: 2.1
+
+orbs:
+  ci: bigcommerce/internal@volatile
+  node: bigcommerce/internal-node@volatile
+
+jobs:
+  build:
+    executor:
+      name: node/node
+      node-version: "10"
+    steps:
+      - ci/pre-setup
+      - ci/merge-base
+      - restore_cache:
+          keys:
+              - validate-commits
+      - run: npm ci
+      - save_cache:
+          key: validate-commits
+          paths:
+            - ~/.npm
+      - run:
+          name: "Build"
+          command: 'npm run test'
+          when: always
+      - run:
+          name: 'Validate Commits @circle'
+          command: '[ -z "$MERGE_BASE_SHA1" ] || node ./bin/validate-commits.js ${MERGE_BASE_SHA1}..${CIRCLE_SHA1}'
+          when: always
+      - run:
+          name: 'Validate Commits @master'
+          command: '[ -z "$MERGE_BASE_SHA1" ] || npx @bigcommerce/validate-commits ${MERGE_BASE_SHA1}..${CIRCLE_SHA1}'
+          when: always
