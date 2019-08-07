@@ -40,14 +40,9 @@ if (argv.installGitHooks) {
     process.exit(0);
 }
 
-const baseBranch = getBranch();
+const range = argv._[0] || `${getBranch()}..`;
 
-if (execSync(`git branch --list ${baseBranch}`).toString().trim() === '') {
-    log(`Skipping commit validation. Branch '${baseBranch}' is not available.`);
-    process.exit(0);
-}
-
-const commits = execSync(`git log --author='\\[bot\\]' --invert-grep --format=%s --no-merges ${baseBranch}..`).toString();
+const commits = execSync(`git log --author='\\[bot\\]' --invert-grep --format=%s --no-merges ${range}`).toString();
 const cleanCommitList = utils.filterEmptyLines(commits);
 const results = commitValidator.validate(cleanCommitList);
 reporter.printReport(results);
