@@ -58,5 +58,12 @@ function getBranch() {
         return process.env.TRAVIS_BRANCH;
     }
 
+    // CircleCI does not currently provide any reference to the PR target, so the best we can assume is that we want to
+    // merge into master.
+    // Probably keep an eye on https://ideas.circleci.com/ideas/CCI-I-894 to see if they do anything about this.
+    if (process.env.CIRCLE_PR_NUMBER && process.env.CIRCLE_PR_NUMBER !== 'false') {
+        return 'origin/master';
+    }
+
     return 'master';
 }
