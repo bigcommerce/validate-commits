@@ -1,23 +1,13 @@
-import { AsyncRule, Rule, SyncRule } from '@commitlint/types';
+import { Plugin } from '@commitlint/types';
 
-import { jiraProjectKey, subjectStartJira } from './rules';
+import { jiraProjectKey } from './rules/jira-project-key';
+import { subjectStartJira } from './rules/subject-start-jira';
 
-export enum CommitlintPluginJiraKeys {
-  JiraProjectKey = 'jira-project-key',
-  SubjectStartJira = 'subject-start-jira',
-}
-
-// Waiting for this to get merged in:
-// https://github.com/conventional-changelog/commitlint/pull/2146
-export interface Plugin {
+const commitlintPluginJira: Plugin = {
   rules: {
-    [ruleName: string]: Rule | AsyncRule | SyncRule;
-  };
-}
-
-export const commitlintPluginJira: Plugin = {
-  rules: {
-    [CommitlintPluginJiraKeys.JiraProjectKey]: jiraProjectKey,
-    [CommitlintPluginJiraKeys.SubjectStartJira]: subjectStartJira,
+    'jira-project-key': jiraProjectKey,
+    'subject-start-jira': subjectStartJira,
   },
 };
+
+export = commitlintPluginJira;

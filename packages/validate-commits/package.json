@@ -23,6 +23,11 @@
     "npm": ">=6.0.0"
   },
   "dependencies": {
+    "@bigcommerce/commitlint-config-jira": "^1.0.0",
+    "@commitlint/format": "^12.1.4",
+    "@commitlint/lint": "^12.1.4",
+    "@commitlint/load": "^12.1.4",
+    "@commitlint/read": "^12.1.4",
     "chalk": "^4.1.1",
     "minimist": "^1.2.0"
   }

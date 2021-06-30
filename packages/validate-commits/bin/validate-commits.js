@@ -1,5 +1,9 @@
 #!/usr/bin/env node
-const execSync = require('child_process').execSync;
+const commitlintConfig = require('@bigcommerce/commitlint-config-jira');
+const format = require('@commitlint/format').default;
+const lint = require('@commitlint/lint').default;
+const load = require('@commitlint/load').default;
+const read = require('@commitlint/read').default;
 const argv = require('minimist')(process.argv.slice(2), {
   boolean: true,
   alias: {
@@ -13,16 +17,13 @@ const argv = require('minimist')(process.argv.slice(2), {
   },
 });
 
-const CommitValidator = require('../lib/commit-validator');
-const config = require('../lib/config');
-const Reporter = require('../lib/reporter');
 const utils = require('../lib/utils');
+
+// TODO: Refactor tests to use bin
+// TODO: License
 
 // eslint-disable-next-line no-console
 const log = argv.silent ? () => {} : console.log;
-
-const commitValidator = new CommitValidator(config);
-const reporter = new Reporter();
 
 if (argv.help) {
   log(utils.helpText);
@@ -39,29 +40,58 @@ if (argv.installGitHooks) {
   process.exit(0);
 }
 
-const range = argv._[0] || `${getBranch()}..`;
+load(utils.mergeDeprecatedConfigFile(commitlintConfig))
+  .then(async (opts) => {
+    const commits = await read(getBranch());
 
-const commits = execSync(
-  `git log --author='\\[bot\\]' --invert-grep --format=%s --no-merges ${range}`,
-).toString();
-const cleanCommitList = utils.filterEmptyLines(commits);
-const results = commitValidator.validate(cleanCommitList);
-
-reporter.printReport(results);
-
-if (!results.valid && !argv.warning) {
-  log('Commit format error!');
-  process.exit(1);
-}
-
-function getBranch() {
-  if (process.env.TRAVIS_PULL_REQUEST && process.env.TRAVIS_PULL_REQUEST !== 'false') {
-    execSync(
-      `git fetch --no-tags origin ${process.env.TRAVIS_BRANCH}:${process.env.TRAVIS_BRANCH}`,
+    const results = await Promise.all(
+      commits.map((commit) =>
+        lint(
+          commit,
+          opts.rules,
+          opts.parserPreset
+            ? {
+                parserOpts: opts.parserPreset.parserOpts,
+                plugins: opts.plugins,
+                defaultIgnores: opts.defaultIgnores,
+                helpUrl: opts.helpUrl,
+                ignores: opts.ignores,
+              }
+            : {},
+        ),
+      ),
     );
 
-    return process.env.TRAVIS_BRANCH;
+    const valid = results.every((result) => result.valid);
+    const output = format({ results }, { verbose: argv.verbose });
+
+    if (output !== '') {
+      log(output);
+    }
+
+    if (!valid && !argv.warning) {
+      throw new Error(output);
+    }
+  })
+  .catch(() => {
+    process.exit(1);
+  });
+
+function getBranch() {
+  if (argv._[0]) {
+    return {
+      from: argv._[0],
+    };
   }
 
-  return 'master';
+  if (process.env.TRAVIS_PULL_REQUEST && process.env.TRAVIS_PULL_REQUEST !== 'false') {
+    return {
+      from: process.env.TRAVIS_BRANCH,
+      to: process.env.TRAVIS_BRANCH,
+    };
+  }
+
+  return {
+    from: 'master',
+  };
 }

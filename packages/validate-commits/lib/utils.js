@@ -2,6 +2,8 @@ const execSync = require('child_process').execSync;
 const fs = require('fs');
 const path = require('path');
 
+const CONFIG_FILE = 'commit-validation.json';
+
 const PRE_PUSH_HOOK = `
 #!/usr/bin/env bash
 
@@ -62,12 +64,27 @@ function installGitHook() {
   fs.writeFileSync(prePushHook, PRE_PUSH_HOOK, { mode: 0o766 });
 }
 
-function filterEmptyLines(text) {
-  return text.split('\n').filter((line) => !line.match(/^\s*$/));
+function mergeDeprecatedConfigFile(defaultConfig) {
+  const configFile = path.join(process.env.PWD, CONFIG_FILE);
+
+  if (!fs.existsSync(configFile)) {
+    return defaultConfig;
+  }
+
+  // eslint-disable-next-line import/no-dynamic-require, global-require
+  const deprecatedConfig = require(configFile);
+
+  return {
+    ...defaultConfig,
+    rules: {
+      ...defaultConfig.rules,
+      'scope-enum': [2, 'always', [...deprecatedConfig.scopes]],
+    },
+  };
 }
 
 module.exports = {
   helpText: HELP_TEXT,
   installGitHook,
-  filterEmptyLines,
+  mergeDeprecatedConfigFile,
 };

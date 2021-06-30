@@ -3,16 +3,20 @@
   "version": "1.0.0",
   "description": "BigCommerce commitlint config for JIRA style commit messages.",
   "license": "MIT",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
-    "index.js"
+    "dist"
   ],
+  "scripts": {
+    "build": "tsc -p ./tsconfig.json"
+  },
   "dependencies": {
     "@bigcommerce/commitlint-plugin-jira": "^1.0.0",
     "@commitlint/config-conventional": "^12.1.4"
   },
   "devDependencies": {
-    "@commitlint/types": "^11.0.0"
+    "@commitlint/types": "^12.1.4"
   },
   "peerDependencies": {
     "@commitlint/lint": ">=7.6.0"
