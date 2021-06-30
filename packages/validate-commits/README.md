@@ -61,7 +61,7 @@ npx validate-commits
 
 ## Requirements
 
-* Node: `>=6`
+* Node: `>=14`
 
 ## License
 

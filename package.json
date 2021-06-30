@@ -1,0 +1,25 @@
+{
+  "name": "@bigcommerce/commitlint",
+  "version": "1.0.0",
+  "description": "Commit validation using commitlint",
+  "private": true,
+  "author": "BigCommerce",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chanceaclark/validate-commits.git"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "test": "lerna run test --stream"
+  },
+  "engines": {
+    "node": "^14.0.0"
+  },
+  "devDependencies": {
+    "lerna": "^4.0.0",
+    "jest": "^26.6.3"
+  }
+}
