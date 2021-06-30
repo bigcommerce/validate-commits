@@ -23,10 +23,10 @@
     "npm": "^6.0.0"
   },
   "dependencies": {
-    "chalk": "^2.1.0",
+    "chalk": "^4.1.1",
     "minimist": "^1.2.0"
   },
   "devDependencies": {
-    "jest": "^24.8.0"
+    "jest": "^26.6.3"
   }
 }
