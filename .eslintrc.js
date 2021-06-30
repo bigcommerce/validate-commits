@@ -1,3 +1,3 @@
 module.exports = {
-  extends: ['@bigcommerce/eslint-config']
-}
+  extends: ['@bigcommerce/eslint-config'],
+};
