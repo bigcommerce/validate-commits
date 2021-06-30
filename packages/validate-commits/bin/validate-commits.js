@@ -1,13 +1,5 @@
 #!/usr/bin/env node
-
-const CommitValidator = require('../lib/commit-validator');
-const Reporter = require('../lib/reporter');
-const utils = require('../lib/utils');
-
 const execSync = require('child_process').execSync;
-
-const config = require('../lib/config');
-
 const argv = require('minimist')(process.argv.slice(2), {
   boolean: true,
   alias: {
@@ -21,6 +13,12 @@ const argv = require('minimist')(process.argv.slice(2), {
   },
 });
 
+const CommitValidator = require('../lib/commit-validator');
+const config = require('../lib/config');
+const Reporter = require('../lib/reporter');
+const utils = require('../lib/utils');
+
+// eslint-disable-next-line no-console
 const log = argv.silent ? () => {} : console.log;
 
 const commitValidator = new CommitValidator(config);
