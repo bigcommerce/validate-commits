@@ -1,5 +1,6 @@
 {
     "scopes": [
-        "common"
+        "common",
+        "cli"
     ]
 }
