@@ -19,7 +19,8 @@
     "test": "jest"
   },
   "engines": {
-    "node": ">=10"
+    "node": "^14.0.0",
+    "npm": "^6.0.0"
   },
   "dependencies": {
     "chalk": "^2.1.0",
