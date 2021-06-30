@@ -10,11 +10,11 @@
   "scripts": {
     "build": "tsc -p ./tsconfig.json"
   },
-  "peerDependencies": {
-    "@commitlint/lint": ">=7.6.0"
-  },
   "devDependencies": {
     "@commitlint/cli": "^11.0.0",
     "@commitlint/types": "^11.0.0"
+  },
+  "peerDependencies": {
+    "@commitlint/lint": ">=7.6.0"
   }
 }
