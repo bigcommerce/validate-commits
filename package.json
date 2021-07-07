@@ -1,32 +1,25 @@
 {
-  "name": "@bigcommerce/validate-commits",
-  "version": "2.2.0",
-  "description": "Validates commits based on a series of scopes/tasks",
-  "files": [
-    "bin",
-    "lib"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/bigcommerce/validate-commits.git"
-  },
+  "name": "@bigcommerce/commitlint",
+  "version": "1.0.0",
+  "description": "Commit validation using commitlint",
+  "private": true,
   "author": "BigCommerce",
   "license": "MIT",
-  "bin": {
-    "validate-commits": "./bin/validate-commits.js"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chanceaclark/validate-commits.git"
   },
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "test": "jest"
+    "test": "lerna run test --stream"
   },
   "engines": {
-    "node": "^14.0.0",
-    "npm": "^6.0.0"
-  },
-  "dependencies": {
-    "chalk": "^4.1.1",
-    "minimist": "^1.2.0"
+    "node": "^14.0.0"
   },
   "devDependencies": {
+    "lerna": "^4.0.0",
     "jest": "^26.6.3"
   }
 }
