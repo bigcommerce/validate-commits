@@ -17,6 +17,9 @@ jobs:
           name: 'Test'
           command: 'yarn run test'
       - run:
+          name: 'Lint'
+          command: 'yarn run lint'
+      - run:
           name: 'Validate Commits @circle'
           command: '[ -z "$MERGE_BASE_SHA1" ] || node ./packages/validate-commits/bin/validate-commits.js ${MERGE_BASE_SHA1}..${CIRCLE_SHA1}'
       - run:
