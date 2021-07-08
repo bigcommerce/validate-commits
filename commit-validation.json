@@ -2,6 +2,7 @@
     "scopes": [
         "common",
         "cli",
-        "plugin"
+        "plugin",
+        "config"
     ]
 }
