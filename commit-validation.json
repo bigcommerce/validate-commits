@@ -1,6 +1,7 @@
 {
     "scopes": [
         "common",
-        "cli"
+        "cli",
+        "plugin"
     ]
 }

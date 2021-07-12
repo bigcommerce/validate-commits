@@ -1,0 +1,20 @@
+{
+  "name": "@bigcommerce/commitlint-plugin-jira",
+  "version": "1.0.0",
+  "description": "BigCommerce commitlint plugin for JIRA style commit messages.",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p ./tsconfig.json"
+  },
+  "peerDependencies": {
+    "@commitlint/lint": ">=7.6.0"
+  },
+  "devDependencies": {
+    "@commitlint/types": "^12.1.4"
+  }
+}

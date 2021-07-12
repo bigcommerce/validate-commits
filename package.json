@@ -13,6 +13,7 @@
     "packages/*"
   ],
   "scripts": {
+    "build": "lerna run build --stream",
     "lint": "eslint . --ext .ts,.js",
     "test": "lerna run test --stream"
   },
