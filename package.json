@@ -16,16 +16,20 @@
     "validate-commits": "./bin/validate-commits.js"
   },
   "scripts": {
+    "lint": "eslint .",
     "test": "jest"
   },
   "engines": {
     "node": ">=10"
   },
+  "prettier": "@bigcommerce/eslint-config/prettier",
   "dependencies": {
     "chalk": "^4.1.2",
     "minimist": "^1.2.5"
   },
   "devDependencies": {
+    "@bigcommerce/eslint-config": "next",
+    "eslint": "^7.32.0",
     "jest": "^27.0.6"
   }
 }

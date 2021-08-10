@@ -21,8 +21,12 @@ jobs:
           paths:
             - ~/.npm
       - run:
-          name: "Build"
+          name: "Test"
           command: 'npm run test'
+          when: always
+      - run:
+          name: 'Lint'
+          command: 'npm run lint'
           when: always
       - run:
           name: 'Validate Commits @circle'
