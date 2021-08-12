@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const execSync = require('child_process').execSync;
+const read = require('@commitlint/read').default;
 const argv = require('minimist')(process.argv.slice(2), {
   boolean: true,
   alias: {
@@ -39,29 +39,41 @@ if (argv.installGitHooks) {
   process.exit(0);
 }
 
-const range = argv._[0] || `${getBranch()}..`;
+run().catch((error) => {
+  log(error);
 
-const commits = execSync(
-  `git log --author='\\[bot\\]' --invert-grep --format=%s --no-merges ${range}`,
-).toString();
-const cleanCommitList = utils.filterEmptyLines(commits);
-const results = commitValidator.validate(cleanCommitList);
-
-reporter.printReport(results);
-
-if (!results.valid && !argv.warning) {
-  log('Commit format error!');
   process.exit(1);
+});
+
+async function run() {
+  const commits = await read(getBranch());
+  const results = commitValidator.validate(commits);
+
+  reporter.printReport(results);
+
+  if (!results.valid && !argv.warning) {
+    throw new Error('Commit format error!');
+  }
 }
 
 function getBranch() {
-  if (process.env.TRAVIS_PULL_REQUEST && process.env.TRAVIS_PULL_REQUEST !== 'false') {
-    execSync(
-      `git fetch --no-tags origin ${process.env.TRAVIS_BRANCH}:${process.env.TRAVIS_BRANCH}`,
-    );
+  if (argv._[0]) {
+    const [from, to] = argv._[0].split('..');
 
-    return process.env.TRAVIS_BRANCH;
+    return {
+      from,
+      to,
+    };
   }
 
-  return 'master';
+  if (process.env.TRAVIS_PULL_REQUEST && process.env.TRAVIS_PULL_REQUEST !== 'false') {
+    return {
+      from: process.env.TRAVIS_BRANCH,
+      to: process.env.TRAVIS_BRANCH,
+    };
+  }
+
+  return {
+    from: 'master',
+  };
 }
