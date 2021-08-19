@@ -47,7 +47,7 @@ run().catch((error) => {
 
 async function run() {
   const commits = await read(getBranch());
-  const results = commitValidator.validate(commits);
+  const results = await commitValidator.validate(commits);
 
   reporter.printReport(results);
 
