@@ -39,20 +39,16 @@ if (argv.installGitHooks) {
   process.exit(0);
 }
 
-run().catch((error) => {
-  log(error);
-
-  process.exit(1);
-});
+run();
 
 async function run() {
   const commits = await read(getBranch());
-  const results = await commitValidator.validate(commits);
+  const { results, valid } = await commitValidator.validate(commits);
 
   reporter.printReport(results);
 
-  if (!results.valid && !argv.warning) {
-    throw new Error('Commit format error!');
+  if (!valid && !argv.warning) {
+    process.exit(1);
   }
 }
 
