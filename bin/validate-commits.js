@@ -15,14 +15,13 @@ const argv = require('minimist')(process.argv.slice(2), {
 
 const CommitValidator = require('../lib/commit-validator');
 const config = require('../lib/config');
-const Reporter = require('../lib/reporter');
+const { logReport } = require('../lib/reporter');
 const utils = require('../lib/utils');
 
 // eslint-disable-next-line no-console
 const log = argv.silent ? () => {} : console.log;
 
 const commitValidator = new CommitValidator(config);
-const reporter = new Reporter();
 
 if (argv.help) {
   log(utils.helpText);
@@ -45,7 +44,7 @@ async function run() {
   const commits = await read(getBranch());
   const { results, valid } = await commitValidator.validate(commits);
 
-  reporter.printReport(results);
+  logReport(results);
 
   if (!valid && !argv.warning) {
     process.exit(1);
