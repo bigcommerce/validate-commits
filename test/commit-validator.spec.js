@@ -1,93 +1,259 @@
 const CommitValidator = require('../lib/commit-validator');
 
-describe('CommitValidator', () => {
-  const options = {
-    scopes: ['foo', 'bar'],
-  };
+let validator;
 
-  it('returns false if message does not contain valid task', async () => {
-    const validator = new CommitValidator(options);
+const options = {
+  scopes: ['foo', 'bar'],
+};
 
-    expect((await validator.validateCommit('build(foo): JIRA-1234 Add build script')).valid).toBe(
-      false,
+beforeEach(() => {
+  validator = new CommitValidator(options);
+});
+
+describe('commit returns true if', () => {
+  it('follows valid format', async () => {
+    const { valid, errors, warnings } = await validator.validateCommit(
+      'refactor(foo): JIRA-1234 Extract method',
     );
-    expect((await validator.validateCommit('doc(bar): JIRA-1234 Update docs')).valid).toBe(false);
+
+    expect(valid).toBe(true);
+    expect(errors).toEqual([]);
+    expect(warnings).toEqual([]);
   });
 
-  it('returns false if message does not contain valid scope', async () => {
-    const validator = new CommitValidator(options);
-
-    expect(
-      (await validator.validateCommit('refactor(hello): JIRA-1234 Extract method')).valid,
-    ).toBe(false);
-    expect((await validator.validateCommit('feat(world): JIRA-1234 Add new feature')).valid).toBe(
-      false,
+  it('follows valid revert format', async () => {
+    const { valid, errors, warnings } = await validator.validateCommit(
+      'Revert "refactor(foo): JIRA-1234 Extract method"',
     );
+
+    expect(valid).toBe(true);
+    expect(errors).toEqual([]);
+    expect(warnings).toEqual([]);
   });
 
-  it('returns false if message does not contain ticket number', async () => {
-    const validator = new CommitValidator(options);
+  describe('release', () => {
+    it('contains a prefix', async () => {
+      const { valid, errors, warnings } = await validator.validateCommit('Releasing v1.0.0');
 
-    expect((await validator.validateCommit('refactor(hello): Extract method')).valid).toBe(false);
+      expect(valid).toBe(true);
+      expect(errors).toEqual([]);
+      expect(warnings).toEqual([]);
+    });
+
+    it('does not include a prefix', async () => {
+      const { valid, errors, warnings } = await validator.validateCommit('Releasing 1.0.0');
+
+      expect(valid).toBe(true);
+      expect(errors).toEqual([]);
+      expect(warnings).toEqual([]);
+    });
+
+    it('is a release candidate', async () => {
+      const { valid, errors, warnings } = await validator.validateCommit('Releasing 1.0.0.rc-1');
+
+      expect(valid).toBe(true);
+      expect(errors).toEqual([]);
+      expect(warnings).toEqual([]);
+    });
+
+    it('is "Release" instead of "Releasing"', async () => {
+      const { valid, errors, warnings } = await validator.validateCommit('Release 1.0.0.rc-1');
+
+      expect(valid).toBe(true);
+      expect(errors).toEqual([]);
+      expect(warnings).toEqual([]);
+    });
   });
 
-  it('returns true if message follows valid format', async () => {
-    const validator = new CommitValidator(options);
+  describe('breaking change', () => {
+    it('follows valid format', async () => {
+      const { valid, errors, warnings } = await validator.validateCommit(
+        `
+        feat(bar): JIRA-1234 use new method
 
-    expect((await validator.validateCommit('refactor(foo): JIRA-1234 Extract method')).valid).toBe(
-      true,
+        BREAKING CHANGE:
+        Use new method instead of old one.
+      `.trim(),
+      );
+
+      expect(valid).toBe(true);
+      expect(errors).toEqual([]);
+      expect(warnings).toEqual([]);
+    });
+
+    it('contains warning if no leading blank line', async () => {
+      const { valid, errors, warnings } = await validator.validateCommit(
+        `
+        feat(bar): JIRA-1234 use new method
+        BREAKING CHANGE:
+        Use new method instead of old one.
+      `.trim(),
+      );
+
+      expect(valid).toBe(true);
+      expect(errors).toEqual([]);
+      expect(warnings).toHaveLength(1);
+      expect(warnings).toStrictEqual([expect.objectContaining({ name: 'footer-leading-blank' })]);
+    });
+  });
+});
+
+describe('commit returns false if', () => {
+  it('contains invalid task', async () => {
+    const { valid, errors, warnings } = await validator.validateCommit(
+      'build(foo): JIRA-1234 Add build script',
     );
-    expect((await validator.validateCommit('feat(bar): JIRA-1234 Add new feature')).valid).toBe(
-      true,
+
+    expect(valid).toBe(false);
+    expect(errors).toHaveLength(1);
+    expect(warnings).toEqual([]);
+    expect(errors).toStrictEqual([expect.objectContaining({ name: 'type-enum' })]);
+  });
+
+  it('contains invalid scope', async () => {
+    const { valid, errors, warnings } = await validator.validateCommit(
+      'refactor(hello): JIRA-1234 Extract method',
     );
+
+    expect(valid).toBe(false);
+    expect(errors).toHaveLength(1);
+    expect(warnings).toEqual([]);
+    expect(errors).toStrictEqual([expect.objectContaining({ name: 'scope-enum' })]);
   });
 
-  it('returns false if message does not follow valid format', async () => {
-    const validator = new CommitValidator(options);
-
-    expect((await validator.validateCommit('refactor[foo]: JIRA-1234 Extract method')).valid).toBe(
-      false,
+  it('does not contain ticket number', async () => {
+    const { valid, errors, warnings } = await validator.validateCommit(
+      'refactor(foo): Extract method',
     );
-    expect((await validator.validateCommit('refactor(foo): JIRA-1234: Extract method')).valid).toBe(
-      false,
+
+    expect(valid).toBe(false);
+    expect(errors).toHaveLength(1);
+    expect(warnings).toEqual([]);
+    expect(errors).toStrictEqual([expect.objectContaining({ name: 'subject-start-jira' })]);
+  });
+
+  it('contains invalid scope format', async () => {
+    const { valid, errors, warnings } = await validator.validateCommit(
+      'refactor[foo]: JIRA-1234 Extract method',
     );
-    expect((await validator.validateCommit('JIRA-1234: refactor(foo) Extract method')).valid).toBe(
-      false,
+
+    expect(valid).toBe(false);
+    expect(errors).toHaveLength(3);
+    expect(warnings).toEqual([]);
+    expect(errors).toStrictEqual([
+      expect.objectContaining({ name: 'scope-empty' }),
+      expect.objectContaining({ name: 'subject-empty' }),
+      expect.objectContaining({ name: 'type-empty' }),
+    ]);
+  });
+
+  it('contains invalid JIRA ticket', async () => {
+    const { valid, errors, warnings } = await validator.validateCommit(
+      'refactor(foo): JIRA-1234: Extract method',
     );
+
+    expect(valid).toBe(false);
+    expect(errors).toHaveLength(1);
+    expect(warnings).toEqual([]);
+    expect(errors).toStrictEqual([expect.objectContaining({ name: 'subject-start-jira' })]);
   });
 
-  it('returns true if message (release commit) follows valid format', async () => {
-    const validator = new CommitValidator(options);
+  it('JIRA tickets is first', async () => {
+    const { valid, errors, warnings } = await validator.validateCommit(
+      'JIRA-1234: refactor(foo) Extract method',
+    );
 
-    expect((await validator.validateCommit('Releasing v1.0.0')).valid).toBe(true);
-    expect((await validator.validateCommit('Releasing 1.0.0')).valid).toBe(true);
-    expect((await validator.validateCommit('Releasing 1.0.0.rc-1')).valid).toBe(true);
-    expect((await validator.validateCommit('Release 1.0.0.rc-1')).valid).toBe(true);
+    expect(valid).toBe(false);
+    expect(errors).toHaveLength(3);
+    expect(warnings).toEqual([]);
+    expect(errors).toStrictEqual([
+      expect.objectContaining({ name: 'scope-empty' }),
+      expect.objectContaining({ name: 'subject-empty' }),
+      expect.objectContaining({ name: 'type-empty' }),
+    ]);
   });
 
-  it('returns false if message (release commit) does not follow valid format', async () => {
-    const validator = new CommitValidator(options);
+  it('does not contain task or scope', async () => {
+    const { valid, errors, warnings } = await validator.validateCommit('This is a commit');
 
-    expect((await validator.validateCommit('v1.0.0')).valid).toBe(false);
-    expect((await validator.validateCommit('Publishing 1.0.0')).valid).toBe(false);
-    expect((await validator.validateCommit('Releasing v1')).valid).toBe(false);
+    expect(valid).toBe(false);
+    expect(errors).toHaveLength(3);
+    expect(warnings).toEqual([]);
+    expect(errors).toStrictEqual([
+      expect.objectContaining({ name: 'scope-empty' }),
+      expect.objectContaining({ name: 'subject-empty' }),
+      expect.objectContaining({ name: 'type-empty' }),
+    ]);
   });
 
-  it('returns true if message (revert commit) follows valid format', async () => {
-    const validator = new CommitValidator(options);
+  describe('release', () => {
+    it('does not contain "Releasing"', async () => {
+      const { valid, errors, warnings } = await validator.validateCommit('v1.0.0');
 
-    expect(
-      (await validator.validateCommit('Revert "refactor(foo): JIRA-1234 Extract method"')).valid,
-    ).toBe(true);
-    expect((await validator.validateCommit('Revert "Extract method"')).valid).toBe(true);
+      expect(valid).toBe(false);
+      expect(errors).toHaveLength(3);
+      expect(warnings).toEqual([]);
+      expect(errors).toStrictEqual([
+        expect.objectContaining({ name: 'scope-empty' }),
+        expect.objectContaining({ name: 'subject-empty' }),
+        expect.objectContaining({ name: 'type-empty' }),
+      ]);
+    });
+
+    it('contains "Publishing"', async () => {
+      const { valid, errors, warnings } = await validator.validateCommit('Publishing 1.0.0');
+
+      expect(valid).toBe(false);
+      expect(errors).toHaveLength(3);
+      expect(warnings).toEqual([]);
+      expect(errors).toStrictEqual([
+        expect.objectContaining({ name: 'scope-empty' }),
+        expect.objectContaining({ name: 'subject-empty' }),
+        expect.objectContaining({ name: 'type-empty' }),
+      ]);
+    });
+
+    it('does not contain valid semver', async () => {
+      const { valid, errors, warnings } = await validator.validateCommit('Releasing v1');
+
+      expect(valid).toBe(false);
+      expect(errors).toHaveLength(3);
+      expect(warnings).toEqual([]);
+      expect(errors).toStrictEqual([
+        expect.objectContaining({ name: 'scope-empty' }),
+        expect.objectContaining({ name: 'subject-empty' }),
+        expect.objectContaining({ name: 'type-empty' }),
+      ]);
+    });
   });
 
-  it('returns false if message (revert commit) does not follow valid format', async () => {
-    const validator = new CommitValidator(options);
+  describe('revert', () => {
+    it('does not contain quotes', async () => {
+      const { valid, errors, warnings } = await validator.validateCommit(
+        'Revert refactor(foo): JIRA-1234 Extract method',
+      );
 
-    expect(
-      (await validator.validateCommit('Revert refactor(foo): JIRA-1234 Extract method')).valid,
-    ).toBe(false);
-    expect((await validator.validateCommit("Revert 'Extract method'")).valid).toBe(false);
+      expect(valid).toBe(false);
+      expect(errors).toHaveLength(3);
+      expect(warnings).toEqual([]);
+      expect(errors).toStrictEqual([
+        expect.objectContaining({ name: 'scope-empty' }),
+        expect.objectContaining({ name: 'subject-empty' }),
+        expect.objectContaining({ name: 'type-empty' }),
+      ]);
+    });
+
+    it('contains single quotes', async () => {
+      const { valid, errors, warnings } = await validator.validateCommit("Revert 'Extract method'");
+
+      expect(valid).toBe(false);
+      expect(errors).toHaveLength(3);
+      expect(warnings).toEqual([]);
+      expect(errors).toStrictEqual([
+        expect.objectContaining({ name: 'scope-empty' }),
+        expect.objectContaining({ name: 'subject-empty' }),
+        expect.objectContaining({ name: 'type-empty' }),
+      ]);
+    });
   });
 });

@@ -1,6 +1,7 @@
 {
     "scopes": [
         "common",
-        "deps"
+        "deps",
+        "tests"
     ]
 }
