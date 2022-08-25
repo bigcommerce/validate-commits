@@ -24,9 +24,9 @@
   },
   "prettier": "@bigcommerce/eslint-config/prettier",
   "dependencies": {
-    "@commitlint/format": "^13.1.0",
-    "@commitlint/lint": "^13.1.0",
-    "@commitlint/read": "^13.1.0",
+    "@commitlint/format": "^13.2.0",
+    "@commitlint/lint": "^13.2.0",
+    "@commitlint/read": "^13.2.0",
     "chalk": "^4.1.2",
     "minimist": "^1.2.5"
   },
