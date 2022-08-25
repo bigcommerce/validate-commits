@@ -3,7 +3,7 @@ const CommitValidator = require('../lib/commit-validator');
 let validator;
 
 const options = {
-  scopes: ['foo', 'bar'],
+  scopes: ['foo', 'bar', 'deps', 'deps-dev'],
 };
 
 beforeEach(() => {
@@ -14,6 +14,26 @@ describe('commit returns true if', () => {
   it('follows valid format', async () => {
     const { valid, errors, warnings } = await validator.validateCommit(
       'refactor(foo): JIRA-1234 Extract method',
+    );
+
+    expect(valid).toBe(true);
+    expect(errors).toEqual([]);
+    expect(warnings).toEqual([]);
+  });
+
+  it('bumps a dep as a chore without a jira ticket', async () => {
+    const { valid, errors, warnings } = await validator.validateCommit(
+      'chore(deps): Bump msw from 1 to 2',
+    );
+
+    expect(valid).toBe(true);
+    expect(errors).toEqual([]);
+    expect(warnings).toEqual([]);
+  });
+
+  it('bumps a dep-dev as a chore without a jira ticket', async () => {
+    const { valid, errors, warnings } = await validator.validateCommit(
+      'chore(deps-dev): Bump msw from 1 to 2',
     );
 
     expect(valid).toBe(true);
@@ -184,6 +204,28 @@ describe('commit returns false if', () => {
       expect.objectContaining({ name: 'subject-empty' }),
       expect.objectContaining({ name: 'type-empty' }),
     ]);
+  });
+
+  it('bumps deps but does not use chore', async () => {
+    const { valid, errors, warnings } = await validator.validateCommit(
+      'refactor(deps): Bump msw from 1 to 2',
+    );
+
+    expect(valid).toBe(false);
+    expect(errors).toHaveLength(1);
+    expect(warnings).toEqual([]);
+    expect(errors).toStrictEqual([expect.objectContaining({ name: 'subject-start-jira' })]);
+  });
+
+  it('bumps deps-dev but does not use chore', async () => {
+    const { valid, errors, warnings } = await validator.validateCommit(
+      'refactor(deps-dev): Bump msw from 1 to 2',
+    );
+
+    expect(valid).toBe(false);
+    expect(errors).toHaveLength(1);
+    expect(warnings).toEqual([]);
+    expect(errors).toStrictEqual([expect.objectContaining({ name: 'subject-start-jira' })]);
   });
 
   describe('release', () => {
