@@ -8,20 +8,19 @@ jobs:
   build:
     executor:
       name: node/node
-      node-version: "10"
     steps:
       - ci/pre-setup
       - ci/merge-base
       - restore_cache:
           keys:
-              - validate-commits
+            - validate-commits
       - run: npm ci
       - save_cache:
           key: validate-commits
           paths:
             - ~/.npm
       - run:
-          name: "Test"
+          name: 'Test'
           command: 'npm run test'
           when: always
       - run:

@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-const read = require('@commitlint/read').default;
 const argv = require('minimist')(process.argv.slice(2), {
   boolean: true,
   alias: {
@@ -15,6 +14,7 @@ const argv = require('minimist')(process.argv.slice(2), {
 
 const CommitValidator = require('../lib/commit-validator');
 const config = require('../lib/config');
+const { getCommitList } = require('../lib/getCommitList');
 const { logReport } = require('../lib/reporter');
 const utils = require('../lib/utils');
 
@@ -40,9 +40,18 @@ if (argv.installGitHooks) {
 
 run();
 
+const ignoredAuthors = [/dependabot\[bot\]@users.noreply.github.com$/];
+
+const filterIgnoredAuthors = ({ author, committer }) => {
+  return !ignoredAuthors.find((regex) => regex.test(author) || regex.test(committer));
+};
+
 async function run() {
-  const commits = await read(getBranch());
-  const { results, valid } = await commitValidator.validate(commits);
+  const commits = await getCommitList(getRange());
+
+  const validateList = commits.filter(filterIgnoredAuthors).map(({ message }) => message);
+
+  const { results, valid } = await commitValidator.validate(validateList);
 
   logReport(results);
 
@@ -51,7 +60,7 @@ async function run() {
   }
 }
 
-function getBranch() {
+function getRange() {
   if (argv._[0]) {
     const [from, to] = argv._[0].split('..');
 
@@ -64,7 +73,6 @@ function getBranch() {
   if (process.env.TRAVIS_PULL_REQUEST && process.env.TRAVIS_PULL_REQUEST !== 'false') {
     return {
       from: process.env.TRAVIS_BRANCH,
-      to: process.env.TRAVIS_BRANCH,
     };
   }
 
