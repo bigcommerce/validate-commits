@@ -8,6 +8,7 @@ jobs:
   build:
     executor:
       name: node/node
+      node-version: '10.24'
     steps:
       - ci/pre-setup
       - ci/merge-base
