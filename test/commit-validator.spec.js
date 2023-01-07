@@ -31,6 +31,16 @@ describe('commit returns true if', () => {
     expect(warnings).toEqual([]);
   });
 
+  it('ends with a full stop', async () => {
+    const { valid, errors, warnings } = await validator.validateCommit(
+      'refactor(foo): JIRA-1234 Extract method.',
+    );
+
+    expect(valid).toBe(true);
+    expect(errors).toEqual([]);
+    expect(warnings).toEqual([]);
+  });
+
   describe('release', () => {
     it('contains a prefix', async () => {
       const { valid, errors, warnings } = await validator.validateCommit('Releasing v1.0.0');
