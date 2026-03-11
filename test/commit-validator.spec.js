@@ -229,9 +229,7 @@ describe('commit returns false if', () => {
   });
 
   it('does not contain ticket number', async () => {
-    const { valid, errors, warnings } = await validator.validateCommit(
-      'ref(foo) - Extract method',
-    );
+    const { valid, errors, warnings } = await validator.validateCommit('ref(foo) - Extract method');
 
     expect(valid).toBe(false);
     expect(errors).toHaveLength(3);
