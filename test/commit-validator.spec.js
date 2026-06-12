@@ -56,6 +56,18 @@ describe('commit returns true if', () => {
       expect(errors).toEqual([]);
       expect(warnings).toEqual([]);
     });
+
+    it('supports the type "refactor"', async () => {
+      const { valid, errors, warnings } = await validator.validateCommit(
+        `
+        JIRA-1234: refactor(bar) - Refactor all the things
+      `.trim(),
+      );
+
+      expect(valid).toBe(true);
+      expect(errors).toEqual([]);
+      expect(warnings).toEqual([]);
+    });
   });
 
   describe('legacy format (type(scope): JIRA-123 subject)', () => {
