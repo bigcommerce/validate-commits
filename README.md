@@ -16,6 +16,9 @@ Your commit message needs to have the following format:
 task(scope): JIRA-1234 My commit message
 ```
 
+`JIRA-1234` is an issue key: a Jira key or a Linear ID. Both trackers use the same `TEAM-123` shape, so either
+is accepted.
+
 You might also want to include a message body to provide additional information, for example, a breaking change.
 
 ```

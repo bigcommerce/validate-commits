@@ -22,6 +22,13 @@ describe('commit returns true if', () => {
       expect(warnings).toEqual([]);
     });
 
+    it('accepts a Linear issue ID', async () => {
+      const { valid, errors } = await validator.validateCommit('ENG-42: feat(foo) - Add something');
+
+      expect(valid).toBe(true);
+      expect(errors).toEqual([]);
+    });
+
     it('follows valid format without scope', async () => {
       const { valid, errors, warnings } = await validator.validateCommit(
         'JIRA-1234: ref - Extract method',
@@ -71,6 +78,13 @@ describe('commit returns true if', () => {
   });
 
   describe('legacy format (type(scope): JIRA-123 subject)', () => {
+    it('accepts a Linear issue ID', async () => {
+      const { valid, errors } = await validator.validateCommit('feat(foo): ENG-42 Add something');
+
+      expect(valid).toBe(true);
+      expect(errors).toEqual([]);
+    });
+
     it('follows valid format', async () => {
       const { valid, errors, warnings } = await validator.validateCommit(
         'refactor(foo): JIRA-1234 Extract method',
